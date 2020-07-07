@@ -1,0 +1,150 @@
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+README
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+
+
+1. Vector de frecventa
+-------------------------------------------------------------------------------
+
+Programul determina numarul de aparitii ale fiecarui element, folosind un
+un vector de frecventa.
+
+Fisier sursa: 
+-------------
+freq.c
+
+Declaratii
+----------
+int num = numarul pe care il citesc
+int freq_array[NMAX] = vectorul de frecventa de lungime NMAX, NMAX = 2000001
+
+----------
+Programul determina numarul de aparitii al unor elemente, citite dintr-un fisier
+text primit prin redirectare. 
+Elementele citite se afla in intervalul [0, 2000000]
+
+Pentru asta am folosit un vector de frecventa. La inceput l-am initializat cu 
+valoarea 0, utilizand functia calloc(). Valorile de pe fiecare pozitie 
+reprezinta numarul de aparitii, iar indexul reprezinta elementul citit.
+Cat timp citim elementele din fisier, valoarea pozitiei elementului respectiv
+creste.
+
+La afisarea elementelor si a numarului de aparitii, am parcurs vectorul cu un
+for(), verificand daca numarul a aparut la citire, valoarea din vector fiind 
+diferita de 0.
+
+
+
+2. Hashtable cu open addressing 
+-------------------------------------------------------------------------------
+
+Programul determina numarul de aparitii ale fiecarui sir folosind un Hashtable 
+cu politica de rezolvare a conflictelor de tip open addressing prin linear 
+probing.
+
+Fisier sursa
+------------
+hash.c
+
+Structuri folosite
+------------------
+
+struct info {
+  char *key; = cheia
+  int value; = numarul de aparitii a sirului
+};
+
+Functii
+-------
+unsigned int hashing(char *a) 
+char *my_strdup(const char *s) 
+
+Declaratii in main()
+--------------------
+
+struct info *ht = vector asociativ
+char strKey[hmax] = string-ul pe care il citesc de lungime HMAX, HMAX = 101
+int index = indexul rezultat de hash(key) % HMAX
+
+-----------------
+
+Programul determina numarul de aparitii ale fiecarui sir folosind un Hashtable 
+cu politica de rezolvare a conflictelor de tip open addressing prin linear 
+probing.
+
+La inceput il initializam pe ht cu 0, folosind functia calloc(). Cat timp citim
+din fisier, aflam indexul sirului folosind relatia:
+
+		index = hash(key) % HMAX, unde key este sirul citit din fisier.
+
+Verificam daca bucket-ul este ocupat sau nu. Daca nu este ocupat valoarea
+din bucket ia valoarea 1 (l-am ocupat), iar cheia o sa ia valoarea sirului, 
+folosind functia my_strdup(). Daca e ocupat si cheile sunt identice valoarea 
+bucket-ului creste, iar daca cheile sunt diferite, se va ocupa primul bucket
+liber.
+
+Afisarea se face la fel ca la prima problema.
+
+
+
+3. Estimatori probabilistici
+-------------------------------------------------------------------------------
+
+Programul este o implementare a algoritmului HyperLogLog.
+
+Fisier sursa
+------------
+hll.c
+
+Functii
+-------
+
+unsigned int hash(int *a) 
+void dec_to_bin(int n, int *bin) 
+int bit_extracted(int number, int k, int p)
+int count_zeros(int *binary)
+int pow_of_2(int n)
+
+Declaratii
+----------
+int n = numarul pe care il citesc
+int j = indexul bucket-ului
+int x = numarul de biti 0 
+int E = numarul de elemente distincte intalnite
+int used_buckets = numarul de bucket-uri folosite
+int binary[bit_size] = vector ce retine numarul in binar de lungime
+						bit_size, unde bit_size = 32
+int M = vector asociativ de dimensiune m, m = 2048 = 2 ^ 11
+float alpha_m = factorul de atenuare
+float z = retine valorile agregate din fiecare bucket
+
+--------------
+
+Programul este o implementare a algoritmului HyperLogLog. 
+
+La inceput am stabilit un numar de bucket-uri m si am initializat cu 0
+vectorul M folosind functia calloc(), bucket-urile fiind libere.
+Numerele sunt citite dintr-un fisier text primit ca parametru a liniei de
+comanda. Pentru fiecare numar citit ii calculam hash-ul. 
+Pe baza primilor log2(m) biti, in cazul de aici 11 biti, determinam bucket-ul. 
+Din restul hash-ului calculam numarul de biti 0, notand numarul cu x.
+Aici am pastrat valoarea in binar a hash-ului in vectorul binary, folosind
+functia dec_to_bin() si am aflat numarul de biti de 0 folosind functia 
+count_zeros().
+Determinam maximul dintre valoare din bucket si x. Daca x este mai mare, 
+atunci valoarea bucket-ului ia valoarea lui x.
+
+Cu un for() calculam suma lui 2 la putera -M[j] si aflam numarul de bucket-uri
+folosite, avand nevoie de acest numar in calcularea lui alpha_m. Dupa ce am 
+iesit din for(), l-am aflat pe z. 
+Il calculam pe alpha_m, fiind in cazul incare m >= 128, dupa formula:
+
+			alpha_m = 0.7213 / (1 + (1.079 / used_buckets))
+
+Il calculam pe E dupa formula:
+
+			E = alpha_m * m ^ 2 * z
+
